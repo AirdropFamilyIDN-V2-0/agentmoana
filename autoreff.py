@@ -1,9 +1,10 @@
 import names
-import requests
+import cloudscraper
 import time
 import random
 from eth_account import Account
 from fake_useragent import UserAgent
+import json
 
 def generate_eth_wallet():
     account = Account.create()
@@ -21,7 +22,7 @@ def register(wallet, twitter, invite):
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json, text/plain, */*",
-        "Accept-Encoding": "gzip, deflate, br, zstd",
+      # "Accept-Encoding": "gzip, deflate, br, zstd",
         "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,id;q=0.7",
         "Origin": "https://agentmoana.xyz",
         "Priority": "u=1",
@@ -39,11 +40,14 @@ def register(wallet, twitter, invite):
         "twitter": twitter,
         "invite": invite
     }
-    response = requests.post("https://moana-y43h.onrender.com/user", json=payload, headers=headers, timeout=30)
-    data = response.json()
+    scraper = cloudscraper.create_scraper()
+    response = scraper.post("https://moana-y43h.onrender.com/user", json=payload, headers=headers, timeout=30)
     
-    # Log the full response for debugging
-    #print("API Response:", data)
+    try:
+        data = response.json()
+    except Exception as e:
+        print("[ERROR] Failed to decode JSON response:", response.text)
+        return None
     
     if data.get("success"):
         return data.get("user", {})
@@ -56,24 +60,25 @@ def main():
     iterations = int(input("Mau berapa referral: "))
     success_count = 0
     failed_count = 0
-    for _ in range(iterations):
-        print(f"\nProcessing referral {_+1}/{iterations}")
+    
+    for i in range(iterations):
+        print(f"\nProcessing referral {i+1}/{iterations}")
         public_key, private_key = generate_eth_wallet()
-        wallet = public_key
         twitter_name = generate_twitter_name()
         print(f"Your generated Twitter handle is {twitter_name}.")
-        twitter = twitter_name
-        user_data = register(wallet, twitter, invite)
+        
+        user_data = register(public_key, twitter_name, invite)
+        
         if user_data:
-            print(f"Registration successful! Your user ID is {user_data['_id']}")
+            print(f"Registration successful! Your user ID is {user_data.get('_id', 'N/A')}")
             print(f"Join Group https://t.me/AirdropFamilyIDN")
             success_count += 1
         else:
             print("Registration failed. Please try again later.")
             failed_count += 1
+        
         time.sleep(5)
     
-
     print(f"\nTotal referral sukses: {success_count}")
     print(f"Total referral gagal : {failed_count}")
 
