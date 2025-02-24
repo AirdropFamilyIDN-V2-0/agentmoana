@@ -12,7 +12,7 @@ git clone https://github.com/AirdropFamilyIDN-V2-0/agentmoana.git
 cd agentmoana
 ```
 ```
-pip install names requests eth-account fake-useragent
+pip install names requests eth-account fake-useragent cloudscraper
 ```
 ```
 python autoreff.py
